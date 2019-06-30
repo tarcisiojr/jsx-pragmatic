@@ -146,6 +146,8 @@ function normalizeChildren(children : NullableChildrenType) : $ReadOnlyArray<Ele
             continue;
         } else if (typeof child === 'string') {
             result.push(new TextNode(child));
+        } else if (typeof child === 'number') {
+            result.push(new TextNode(String(child)));
         } else if (Array.isArray(child)) {
             for (const subchild of normalizeChildren(child)) {
                 result.push(subchild);
@@ -154,7 +156,19 @@ function normalizeChildren(children : NullableChildrenType) : $ReadOnlyArray<Ele
             result.push(child);
     
         } else {
-            throw new TypeError(`Unrecognized node type: ${ typeof child }`);
+            if (typeof child === 'object') {
+                if (Object.hasOwnProperty('toString')) {
+                    result.push(new TextNode(child.toString()));
+                } else {
+                    try {
+                        result.push(new TextNode(JSON.stringify(child)));
+                    } catch {
+                        throw new TypeError(`Unrecognized node type: ${ typeof child }`);
+                    }
+                }
+            } else {
+                throw new TypeError(`Unrecognized node type: ${ typeof child }`);
+            }
         }
     }
 
