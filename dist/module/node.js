@@ -149,6 +149,8 @@ function normalizeChildren(children) {
       continue;
     } else if (typeof child === 'string') {
       result.push(new TextNode(child));
+    } else if (typeof child === 'number') {
+      result.push(new TextNode(String(child)));
     } else if (Array.isArray(child)) {
       for (var _i8 = 0, _normalizeChildren2 = normalizeChildren(child); _i8 < _normalizeChildren2.length; _i8++) {
         var subchild = _normalizeChildren2[_i8];
@@ -157,7 +159,19 @@ function normalizeChildren(children) {
     } else if (child && (child.type === NODE_TYPE.ELEMENT || child.type === NODE_TYPE.TEXT || child.type === NODE_TYPE.COMPONENT)) {
       result.push(child);
     } else {
-      throw new TypeError("Unrecognized node type: " + typeof child);
+      if (typeof child === 'object') {
+        if (Object.hasOwnProperty('toString')) {
+          result.push(new TextNode(child.toString()));
+        } else {
+          try {
+            result.push(new TextNode(JSON.stringify(child)));
+          } catch (_unused) {
+            throw new TypeError("Unrecognized node type: " + typeof child);
+          }
+        }
+      } else {
+        throw new TypeError("Unrecognized node type: " + typeof child);
+      }
     }
   }
 
